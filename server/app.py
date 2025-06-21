@@ -3,6 +3,7 @@ from models import db, Restaurant, RestaurantPizza, Pizza
 from flask_migrate import Migrate
 from flask import Flask, request, make_response
 from flask_restful import Api, Resource
+from flask import Flask, request, jsonify
 import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -23,18 +24,14 @@ api = Api(app)
 @app.route('/restaurants')
 def get_restaurants():
     restaurants = Restaurant.query.all()
-    return jsonify([{
-        "id": r.id,
-        "name": r.name,
-        "address": r.address
-    } for r in restaurants])
+    return jsonify([r.to_dict() for r in restaurants])
 
 
 @app.route('/restaurants/<int:id>')
 def get_restaurant(id):
     restaurant = Restaurant.query.get(id)
     if restaurant:
-        return jsonify(restaurant.to_dict())
+        return jsonify(restaurant.to_dict_with_pizzas())
     return jsonify({"error": "Restaurant not found"}), 404
 
 

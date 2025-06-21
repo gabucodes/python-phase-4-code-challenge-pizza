@@ -22,13 +22,35 @@ class Restaurant(db.Model):
 
     restaurant_pizzas = db.relationship('RestaurantPizza', backref='restaurant', cascade='all, delete-orphan')
 
+    # Basic dict (for GET /restaurants)
     def to_dict(self):
         return {
             "id": self.id,
             "name": self.name,
-            "address": self.address,
-            "restaurant_pizzas": [rp.to_dict() for rp in self.restaurant_pizzas]
+            "address": self.address
         }
+
+    # Detailed dict with pizzas (for GET /restaurants/<id>)
+    def to_dict_with_pizzas(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "address": self.address,
+            "restaurant_pizzas": [
+                {
+                    "id": rp.id,
+                    "price": rp.price,
+                    "pizza_id": rp.pizza_id,
+                    "restaurant_id": rp.restaurant_id,
+                    "pizza": {
+                        "id": rp.pizza.id,
+                        "name": rp.pizza.name,
+                        "ingredients": rp.pizza.ingredients
+                    }
+                } for rp in self.restaurant_pizzas
+            ]
+        }
+
 
 
 class Pizza(db.Model):
@@ -64,10 +86,18 @@ class RestaurantPizza(db.Model):
 
     def to_dict(self):
         return {
-            "id": self.id,
-            "price": self.price,
-            "pizza_id": self.pizza_id,
-            "pizza": self.pizza.to_dict(),
-            "restaurant_id": self.restaurant_id,
-            "restaurant": self.restaurant.to_dict()
+        "id": self.id,
+        "price": self.price,
+        "pizza_id": self.pizza_id,
+        "pizza": {
+            "id": self.pizza.id,
+            "name": self.pizza.name,
+            "ingredients": self.pizza.ingredients
+        },
+        "restaurant_id": self.restaurant_id,
+        "restaurant": {
+            "id": self.restaurant.id,
+            "name": self.restaurant.name,
+            "address": self.restaurant.address
         }
+    }
